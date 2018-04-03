@@ -10,8 +10,8 @@
 	//数据库名 + 集合名
 	define('MONGODB_CNAME', 'test.mdkj');
 
-	$a = new Base();
-	$data = $a->getRandomUser();
+	$base = new Base();
+	$data = $base->getRandomUser(100);
 
 
 	//获取年份数组
@@ -19,8 +19,8 @@
 	foreach( $dateYear as $v){
 		$year[] = date('Y', strtotime($v) );
 	}
-	$yearArray = array_unique($year);
-
+	$yearArray = array_unique($year); 
+	$yearArray = $base->getDateArea($yearArray,5);  
 
 	//php7 扩展的api
 	$manager = new MongoDB\Driver\Manager("mongodb://localhost:27017");
@@ -73,16 +73,21 @@
 
 
 
-	echo "<br>-------------------- 以下是按照年份分组（使用间隔为1年）---------------------------<br><br>";
+	echo "<br>-------------------- 以下是按照年份分组（使用间隔为5年）---------------------------<br><br>";
 
 
 
 	echo "不同年龄的用户分组信息<br>";
 
 	foreach( $yearArray as $y){
+		if( is_array($y) && count($y) == 2 ){
+			$startDate = $y[1] . "-01-01";
+			$endDate = $y[0] . "-12-12";
+		}else{
+			$startDate = $y . "-01-01";
+			$endDate = $y . "-12-12";
+		}
 
-		$startDate = $y . "-01-01";
-		$endDate = $y . "-12-12";
 
 		$filter = ['birth' => ['$lte' => $endDate , '$gte' => $startDate ]];
 		$options = [
@@ -91,13 +96,13 @@
 
 
 	    $query = new MongoDB\Driver\Query( $filter ,$options );
-		$cursor = $manager->executeQuery('test.mdkj', $query);
+		$cursor = $manager->executeQuery(MONGODB_CNAME, $query);
 
 		$res = [];
 		foreach ($cursor as $document) {
 		    $res[] = $document;
 		}
-		echo "{$y} 年的用户分组信息<br>";
+		echo "{$y[1]} 至 {$y[0]} 年的用户分组信息<br> 包含个数为 ".count($res)."<br><br>";
 		dump($res);
 
 	}
