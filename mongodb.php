@@ -5,6 +5,10 @@
 	//加载通用方法
 	include('./baseClass.php');
 
+	//数据库名称
+	define('MONGODB_DATABASE','test');
+	//数据库名 + 集合名
+	define('MONGODB_CNAME', 'test.mdkj');
 
 	$a = new Base();
 	$data = $a->getRandomUser();
@@ -24,11 +28,11 @@
 
 	//数据查询
     $query = new MongoDB\Driver\Query([]);
-	$cursor = $manager->executeQuery('test.mdkj', $query);
+	$cursor = $manager->executeQuery( MONGODB_CNAME, $query);
 
-    // dump( $cursor->toArray() );
 	$dbData = [];
 
+	//保存句柄下面的数据
 	foreach ($cursor as $document) {
 	    $dbData[] = $document;
 	}
@@ -43,7 +47,7 @@
 	    }
 
 		$writeConcern = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY, 1000);
-		$result = $manager->executeBulkWrite('test.mdkj', $bulk, $writeConcern);
+		$result = $manager->executeBulkWrite( MONGODB_CNAME, $bulk, $writeConcern);
 
 		dump($result);
 		die("初始数据写入成功,请重新刷新页面");
@@ -62,41 +66,18 @@
 
 	$cmd = new MongoDB\Driver\Command($param1);
 
-	$res = $manager->executeCommand( 'test',$cmd );
+	$res = $manager->executeCommand( MONGODB_DATABASE,$cmd );
 
 	echo "不同省份的用户分组信息<br>";
 	dump( $res->toArray() );
 
 
 
-	echo "<br>-----------------------------------------------<br>";
+	echo "<br>-------------------- 以下是按照年份分组（使用间隔为1年）---------------------------<br><br>";
 
 
-	// $param1 = [
-	// 	'aggregate' => 'mdkj',
-	// 	'pipeline' => [
-	// 		[
-	// 			// '$group' => [
-	// 			// 	'_id' => '$birth',
-	// 			// 	'sum' => ['$sum' => 1]
-	// 			// ],
-
- //                '$match' => [
- //                    '$birth' => [ '$gt'=> '1']
- //                ]
-	// 		]
-	// 	],
-	// 	'cursor' => new stdClass,
-	// ];
-
-	// $cmd2 = new MongoDB\Driver\Command($param1);
-
-	// $res2 = $manager->executeCommand( 'test',$cmd2 );
 
 	echo "不同年龄的用户分组信息<br>";
-	// dump( $res2->toArray() );	
-
-
 
 	foreach( $yearArray as $y){
 
